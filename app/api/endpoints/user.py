@@ -27,7 +27,9 @@ def login(code):
         db.add(newTask)
         db.commit()
 
-    return res
+    return {
+        'openid': res['openid']
+    }
 
 @router.get("/findUserInfo")
 def findUserInfo(jwt: str = Header(None)):

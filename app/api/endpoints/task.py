@@ -23,6 +23,8 @@ def task(jwt: str = Header(None), type: str = '', score: int = 0):
         score = 0
 
     task.ad = task.ad == True or type == 'ad'
+    task.ad2 = task.ad2 == True or type == 'ad2'
+    task.ad3 = task.ad3 == True or type == 'ad3'
     task.share = task.share == True or type == 'share'
     task.share_circle = task.share_circle == True or type == 'share_circle'
 
@@ -44,9 +46,10 @@ def getTaskStatus(jwt: str = Header(None)):
             task.sign_date = ''
     if task.task_date != today:
         task.ad = False
+        task.ad2 = False
+        task.ad3 = False
         task.share = False
         task.share_circle = False
-        task.ad = False
         task.task_date = today
 
     db.commit()
