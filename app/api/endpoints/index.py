@@ -15,6 +15,7 @@ def updateScore(jwt):
     user = db.query(User).filter_by(openid=jwt).first()
     user.score -= 2
     db.commit()
+    db.close()
 
 @router.get("/dyVideo/")
 def read_root(jwt: str = Header(None), url: str = ''):
@@ -78,7 +79,10 @@ def xhsParse(jwt: str = Header(None), url: str = ''):
     # data['collect'] = collect
     # data['comment'] = comment
     # data['videotime'] = videotime
-    data['images'] = images
+
+    newImages = [imgUrl if 'https' in imgUrl else imgUrl.replace('http', 'https') for imgUrl in images]
+
+    data['images'] = newImages
     data['videos'] = [tag['content'] for tag in video_tags] if video_tags else ''
     # 提取rel属性为"preload"的link标签
     # cover_img = [link.get('href') for link in soup.find_all('link', rel="preload") if link.get('href')]

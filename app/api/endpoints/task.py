@@ -12,6 +12,7 @@ def updateScore(jwt, score):
     allScore = user.score + score
     user.score = allScore if allScore < 999 else 999
     db.commit()
+    db.close()
 
     return user.score
 
@@ -28,8 +29,6 @@ def task(jwt: str = Header(None), type: str = '', score: int = 0):
     task.share = task.share == True or type == 'share'
     task.share_circle = task.share_circle == True or type == 'share_circle'
 
-    db.commit()
-
     newScore = updateScore(jwt, score)
 
     return {'success': True, 'score': newScore}
@@ -44,6 +43,7 @@ def getTaskStatus(jwt: str = Header(None)):
         # 满签则重置
         if len(arr) == 7 and (not (today in arr)):
             task.sign_date = ''
+            db.commit()
     if task.task_date != today:
         task.ad = False
         task.ad2 = False
@@ -51,10 +51,10 @@ def getTaskStatus(jwt: str = Header(None)):
         task.share = False
         task.share_circle = False
         task.task_date = today
+        db.commit()
 
-    db.commit()
-    task = db.query(Task).filter_by(openid=jwt).first()
-    
+    db.close()
+
     return {
         **task.__dict__,
         'time': int(round(time.time() * 1000)),
@@ -69,8 +69,6 @@ def task(jwt: str = Header(None), date: str = '', score: int = 0):
     else:
         task.sign_date += ',' + date
     
-    db.commit()
-
     newScore = updateScore(jwt, score)
 
     return {'success': True, 'score': newScore}

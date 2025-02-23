@@ -26,6 +26,7 @@ def login(code):
         db.add(newUser)
         db.add(newTask)
         db.commit()
+        db.close()
 
     return {
         'openid': res['openid']
@@ -34,7 +35,7 @@ def login(code):
 @router.get("/findUserInfo")
 def findUserInfo(jwt: str = Header(None)):
     user = db.query(User).filter_by(openid=jwt).first()
-
+    db.close()
     return user
 
 @router.post("/upload")
@@ -50,6 +51,7 @@ async def upload(jwt: str = Header(None), file: UploadFile = File(...)):
     user = db.query(User).filter_by(openid=jwt).first()
     user.avatar = file.filename
     db.commit()
+    db.close()
 
     return {"filename": file.filename}
 
@@ -59,7 +61,7 @@ def updateUserInfo(jwt: str = Header(None), type: str = '', value: str = ''):
 
     if type == 'nickname':
         user.nickname = value
-
-    db.commit()
+        db.commit()
+    db.close()
 
     return {'success': True}
