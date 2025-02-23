@@ -15,7 +15,6 @@ def updateScore(jwt):
     user = db.query(User).filter_by(openid=jwt).first()
     user.score -= 2
     db.commit()
-    db.close()
 
 @router.get("/dyVideo/")
 def read_root(jwt: str = Header(None), url: str = ''):

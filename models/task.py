@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Column, String, Boolean, Integer
 from db.base import Base
 
 class Task(Base):
@@ -12,3 +12,4 @@ class Task(Base):
     share_circle = Column(Boolean)
     sign_date = Column(String(50))
     task_date = Column(String(5))
+    share_count = Column(Integer)
