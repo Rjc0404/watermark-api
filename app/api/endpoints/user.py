@@ -7,7 +7,7 @@ import aiofiles
 
 router = APIRouter()
 
-@router.get("/login")
+@router.get("/api/login")
 def login(code):
     response = requests.get("https://api.weixin.qq.com/sns/jscode2session?appid=wx5bb2b38dcb169957&secret=4bcbe7130c538dda3864b49bf9f1b8c9&grant_type=authorization_code&js_code=" + code)
     res = response.json()
@@ -30,17 +30,26 @@ def login(code):
     db.commit()
 
     return {
+        "success": True,
         'openid': res['openid']
     }
 
-@router.get("/findUserInfo")
+@router.get("/api/findUserInfo")
 def findUserInfo(jwt: str = Header(None)):
     user = db.query(User).filter_by(openid=jwt).first()
-    
-    return user
+    if not user:
+        return {'success': False, 'msg': '用户不存在'}
 
-@router.post("/upload")
+    return {
+        **user.__dict__,
+        "success": True,
+    }
+
+@router.post("/api/upload")
 async def upload(jwt: str = Header(None), file: UploadFile = File(...)):
+    user = db.query(User).filter_by(openid=jwt).first()
+    if not user:
+        return {'success': False, 'msg': '用户不存在'}
     # 定义保存文件的路径
     out_file_path = f"./static/{file.filename}"
     
@@ -49,16 +58,16 @@ async def upload(jwt: str = Header(None), file: UploadFile = File(...)):
         content = await file.read()  # 异步读取内容
         await out_file.write(content)  # 异步写入内容
 
-    user = db.query(User).filter_by(openid=jwt).first()
     user.avatar = file.filename
     db.commit()
 
-    return {"filename": file.filename}
+    return {"filename": file.filename, "success": True}
 
-@router.get("/updateUserInfo")
+@router.get("/api/updateUserInfo")
 def updateUserInfo(jwt: str = Header(None), type: str = '', value: str = ''):
     user = db.query(User).filter_by(openid=jwt).first()
-
+    if not user:
+        return {'success': False, 'msg': '用户不存在'}
     if type == 'nickname':
         user.nickname = value
         db.commit()

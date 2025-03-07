@@ -15,27 +15,35 @@ def updateScore(jwt, score):
 
     return user.score
 
-@router.get("/task")
-def task(jwt: str = Header(None), type: str = '', score: int = 0):
+@router.get("/api/task")
+def task(jwt: str = Header(None), taskType: str = '', score: int = 0):
     task = db.query(Task).filter_by(openid=jwt).first()
-    # 分享朋友圈不重复增加积分
-    if type == 'share_circle' and task.share == True:
+    if not task:
+        return {'success': False, 'msg': '用户不存在'}
+    try:
+        int(score)
+        # 分享朋友圈不重复增加积分
+        if taskType == 'share_circle' and task.share == True:
+            score = 0
+    except:
         score = 0
+    finally:
+        task.ad = task.ad == True or taskType == 'ad'
+        task.ad2 = task.ad2 == True or taskType == 'ad2'
+        task.ad3 = task.ad3 == True or taskType == 'ad3'
+        task.share = task.share == True or taskType == 'share'
+        task.share_circle = task.share_circle == True or taskType == 'share_circle'
+        task.share_count = taskType == 'share_count' or 3 if task.share_count == 3 else task.share_count + 1
 
-    task.ad = task.ad == True or type == 'ad'
-    task.ad2 = task.ad2 == True or type == 'ad2'
-    task.ad3 = task.ad3 == True or type == 'ad3'
-    task.share = task.share == True or type == 'share'
-    task.share_circle = task.share_circle == True or type == 'share_circle'
-    task.share_count = 3 if task.share_count == 3 else task.share_count + 1 or type == 'share_count'
+        newScore = updateScore(jwt, score)
 
-    newScore = updateScore(jwt, score)
+        return {'success': True, 'score': newScore}
 
-    return {'success': True, 'score': newScore}
-
-@router.get("/getTaskStatus")
+@router.get("/api/getTaskStatus")
 def getTaskStatus(jwt: str = Header(None)):
     task = db.query(Task).filter_by(openid=jwt).first()
+    if not task:
+        return {'success': False, 'msg': '用户不存在'}
     today = datetime.today().strftime("%m-%d")
 
     if task.sign_date:
@@ -59,12 +67,14 @@ def getTaskStatus(jwt: str = Header(None)):
     return {
         **task.__dict__,
         'time': int(round(time.time() * 1000)),
+        'success': True
     }
 
-@router.get("/sign")
+@router.get("/api/sign")
 def task(jwt: str = Header(None), date: str = '', score: int = 0):
     task = db.query(Task).filter_by(openid=jwt).first()
-
+    if not task:
+        return {'success': False, 'msg': '用户不存在'}
     if not task.sign_date:
         task.sign_date = date
     else:

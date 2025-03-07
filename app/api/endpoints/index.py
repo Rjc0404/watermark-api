@@ -11,29 +11,46 @@ HybridCrawler = HybridCrawler()
 
 router = APIRouter()
 
+# @router.middleware("http")
+# async def catch_exceptions_middleware(request: Request, call_next):
+#     try:
+#         return await call_next(request)
+#     except Exception as e:
+#         logger.error(f"Unhandled exception: {str(e)}\n{traceback.format_exc()}")
+#         return JSONResponse(
+#             status_code=500,
+#             content={"detail": "Internal server error occurred. Please try again later."}
+#         )
+
 def updateScore(jwt):
     user = db.query(User).filter_by(openid=jwt).first()
     user.score -= 2
     db.commit()
 
-@router.get("/dyVideo/")
+@router.get("/api/dyVideo/")
 def read_root(jwt: str = Header(None), url: str = ''):
     res = asyncio.run(HybridCrawler.hybrid_parsing_single_video(url))
     if res:
-        updateScore(jwt)
-    return res
+        try:
+            updateScore(jwt)
+        except:
+            return {'success': False, 'msg': '用户不存在'}
+    return {
+        **res,
+        "success": True
+    }
 
-@router.get("/redirect")
+@router.get("/api/redirect")
 async def get_redirect_url(url: str):
     async with httpx.AsyncClient() as client:
         response = await client.get(url, follow_redirects=False)
         if response.status_code in (301, 302):
             redirect_url = response.headers.get('Location')
-            return {"redirect_url": redirect_url}
+            return {"success": True, "redirect_url": redirect_url}
         else:
-            return {"redirect_url": url}
+            return {"success": True, "redirect_url": url}
         
-@router.get("/xhsParse")
+@router.get("/api/xhsParse")
 def xhsParse(jwt: str = Header(None), url: str = ''):
     headers = {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0',
@@ -90,6 +107,18 @@ def xhsParse(jwt: str = Header(None), url: str = ''):
         # 返回JSON格式的字典
 
     if data['images'] or data['videos']:
-        updateScore(jwt)
-
-    return data
+        try:
+            updateScore(jwt)
+        except:
+            return {'success': False, 'msg': '用户不存在'}
+        else:
+            return {
+                **data,
+                "success": True
+            }
+    else:
+        return {
+            "success": False,
+            "msg": "No images or videos found."
+        }
+   

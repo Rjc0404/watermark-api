@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from app.api.endpoints import index,user,task
 from models import register_database
@@ -13,6 +13,19 @@ app.include_router(task.router)
 
 # 注册数据库
 register_database()
+
+# @app.middleware("http")
+# async def add_process_time_header(request: Request, call_next):
+#     response = await call_next(request)
+#     if 'static' in request.url.path or 'login' in request.url.path:
+#         return response
+#     if 'jwt' not in request.headers:
+#         return {'success': False, 'msg': '用户不存在'}
+#     user = db.query(User).filter_by(openid=request.headers['jwt']).first()
+#     if not user:
+#         return {'success': False, 'msg': '用户不存在'}
+    
+#     return response
 
 if __name__ == '__main__':
     import uvicorn
