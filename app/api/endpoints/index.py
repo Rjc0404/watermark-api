@@ -11,17 +11,6 @@ HybridCrawler = HybridCrawler()
 
 router = APIRouter()
 
-# @router.middleware("http")
-# async def catch_exceptions_middleware(request: Request, call_next):
-#     try:
-#         return await call_next(request)
-#     except Exception as e:
-#         logger.error(f"Unhandled exception: {str(e)}\n{traceback.format_exc()}")
-#         return JSONResponse(
-#             status_code=500,
-#             content={"detail": "Internal server error occurred. Please try again later."}
-#         )
-
 def updateScore(jwt):
     user = db.query(User).filter_by(openid=jwt).first()
     user.score -= 2
