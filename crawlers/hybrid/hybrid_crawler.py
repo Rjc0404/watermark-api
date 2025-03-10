@@ -8,7 +8,11 @@ class HybridCrawler:
         if "douyin" in url:
             platform = "douyin"
             aweme_id = await self.DouyinWebCrawler.get_aweme_id(url)
+            if not aweme_id:
+                return {'success': False, 'msg': '获取视频ID失败'}
             data = await self.DouyinWebCrawler.fetch_one_video(aweme_id)
+            if not data:
+                return {'success': False, 'msg': '获取视频数据失败'}
             data = data.get("aweme_detail")
             aweme_type = data.get("aweme_type")
 
