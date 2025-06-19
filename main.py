@@ -55,6 +55,6 @@ register_database()
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run('main:app',host="0.0.0.0",port=8093, ssl_keyfile='./app/utils/jiancheng.asia.key',ssl_certfile='./app/utils/jiancheng.asia_bundle.pem')
-    # uvicorn.run('main:app',host="0.0.0.0",port=8093)
+    # uvicorn.run('main:app',host="0.0.0.0",port=8093, ssl_keyfile='./app/utils/jiancheng.asia.key',ssl_certfile='./app/utils/jiancheng.asia_bundle.pem')
+    uvicorn.run('main:app',host="0.0.0.0",port=8093)
     # uvicorn.run('main:app',host="0.0.0.0",port=80)

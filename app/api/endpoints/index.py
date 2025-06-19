@@ -12,9 +12,14 @@ HybridCrawler = HybridCrawler()
 router = APIRouter()
 
 def updateScore(jwt):
-    user = db.query(User).filter_by(openid=jwt).first()
-    user.score -= 2
-    db.commit()
+    try:
+        user = db.query(User).filter_by(openid=jwt).first()
+        user.score -= 2
+        db.commit()
+    except:
+        db.rollback()
+    finally:
+        db.close()
 
 @router.get("/api/dyVideo/")
 def read_root(jwt: str = Header(None), url: str = ''):
@@ -22,12 +27,15 @@ def read_root(jwt: str = Header(None), url: str = ''):
     if res:
         try:
             updateScore(jwt)
+
+            return {
+                **res,
+                "success": True
+            }
         except:
             return {'success': False, 'msg': '用户不存在'}
-    return {
-        **res,
-        "success": True
-    }
+    else:
+        return {'success': False, 'msg': '解析失败'}
 
 @router.get("/api/redirect")
 async def get_redirect_url(url: str):
