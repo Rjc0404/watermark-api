@@ -34,7 +34,7 @@ async def catch_exceptions_middleware(request: Request, call_next):
         # 写入日志
         logger.error(f"Request failed: {error_detail}")
         
-        # 返回错误响应
+        # 返回错误响应.
         return JSONResponse(
             status_code=500,
             content={
