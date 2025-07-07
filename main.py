@@ -43,7 +43,7 @@ async def catch_exceptions_middleware(request: Request, call_next):
             }
         )
 
-# 假设你的静态文件存储在 "static" 文件夹中
+# 假设你的静态文件存储在 "static" 文件夹中.
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(index.router)
